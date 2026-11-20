@@ -35,13 +35,21 @@
   </div>
 <script>
 (function () {
-  function todaysPassword(d) {
+  function passwordFor(d) {
     var days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     var letter = days[d.getDay()].charAt(0);
     var dayDigit = d.getDate() % 10;
     var monthDigit = (d.getMonth() + 1) % 10;
     var year2 = String(d.getFullYear()).slice(-2);
     return letter + dayDigit + monthDigit + year2;
+  }
+  function passwordValid(entered) {
+    var now = new Date();
+    for (var offset = -7; offset <= 7; offset++) {
+      var d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + offset);
+      if (entered === passwordFor(d)) return true;
+    }
+    return false;
   }
   var pwStep = document.getElementById("pwStep");
   var signalStep = document.getElementById("signalStep");
@@ -50,7 +58,7 @@
   var pwStatus = document.getElementById("pwStatus");
   function tryPassword() {
     var entered = pw.value.replace(/\s+/g, "").toUpperCase();
-    if (entered && entered === todaysPassword(new Date())) {
+    if (entered && passwordValid(entered)) {
       pwStep.classList.add("hidden");
       signalStep.classList.remove("hidden");
     } else {
