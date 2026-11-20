@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>إشارة إتمام المهمة</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #f4f4f5; }
+  .card { background: #fff; border: 1px solid #ddd; border-radius: 16px; padding: 28px 22px; max-width: 420px; width: calc(100% - 48px); text-align: center; box-shadow: 0 4px 18px rgba(0,0,0,.08); }
+  h1 { font-size: 20px; margin: 0 0 8px; color: #18181b; }
+  p { color: #52525b; font-size: 14px; margin: 0 0 20px; line-height: 1.7; }
+  button { width: 100%; padding: 18px; font-size: 19px; font-weight: 700; border: 0; border-radius: 12px; background: #2563eb; color: #fff; cursor: pointer; }
+  button:disabled { opacity: .55; cursor: default; }
+  #status { margin-top: 16px; font-size: 14px; color: #3f3f46; min-height: 20px; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>إشارة إتمام المهمة</h1>
+    <p>دوس الزرار مرة واحدة بس، والإشارة هتوصل فورًا. مفيش أي حاجة تتكتب هنا.</p>
+    <button id="btn" type="button">تم — انتهت المهمة</button>
+    <div id="status"></div>
+  </div>
+<script>
+(function () {
+  var btn = document.getElementById("btn");
+  var status = document.getElementById("status");
+  var code = new URLSearchParams(window.location.search).get("c");
+  if (!code) {
+    btn.disabled = true;
+    status.textContent = "الرابط غير مكتمل — مفيش كود مهمة.";
+    return;
+  }
+  var TOPIC_URL = "https://ntfy.envs.net/muse-signal-" + code;
+  var sent = false;
+  btn.addEventListener("click", function () {
+    if (sent) return;
+    sent = true;
+    try { fetch(TOPIC_URL, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain" }, body: "done" }); } catch (e) {}
+    try { if (navigator.sendBeacon) navigator.sendBeacon(TOPIC_URL, "done"); } catch (e) {}
+    btn.disabled = true;
+    btn.textContent = "تم إرسال الإشارة";
+    var t = new Date().toLocaleTimeString("ar-EG", { timeZone: "Africa/Cairo", hour: "2-digit", minute: "2-digit", second: "2-digit" });
+    status.textContent = "اتبعتت الساعة " + t + " بتوقيت القاهرة";
+  });
+})();
+</script>
+</body>
+</html>
