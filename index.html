@@ -9,20 +9,58 @@
   .card { background: #fff; border: 1px solid #ddd; border-radius: 16px; padding: 28px 22px; max-width: 420px; width: calc(100% - 48px); text-align: center; box-shadow: 0 4px 18px rgba(0,0,0,.08); }
   h1 { font-size: 20px; margin: 0 0 8px; color: #18181b; }
   p { color: #52525b; font-size: 14px; margin: 0 0 20px; line-height: 1.7; }
+  input { width: 100%; box-sizing: border-box; padding: 14px; font-size: 18px; text-align: center; letter-spacing: 2px; border: 1px solid #d4d4d8; border-radius: 12px; margin-bottom: 12px; }
   button { width: 100%; padding: 18px; font-size: 19px; font-weight: 700; border: 0; border-radius: 12px; background: #2563eb; color: #fff; cursor: pointer; }
   button:disabled { opacity: .55; cursor: default; }
-  #status { margin-top: 16px; font-size: 14px; color: #3f3f46; min-height: 20px; }
+  #status, #pwStatus { margin-top: 16px; font-size: 14px; color: #3f3f46; min-height: 20px; }
+  .err { color: #b91c1c !important; }
+  .hidden { display: none; }
 </style>
 </head>
 <body>
   <div class="card">
-    <h1>إشارة إتمام المهمة</h1>
-    <p>دوس الزرار مرة واحدة بس، والإشارة هتوصل فورًا. مفيش أي حاجة تتكتب هنا.</p>
-    <button id="btn" type="button">تم — انتهت المهمة</button>
-    <div id="status"></div>
+    <div id="pwStep">
+      <h1>صفحة محمية بباسورد</h1>
+      <p>اكتب الباسورد اللي وصلك مع الرابط عشان توصل لزرار الإشارة.</p>
+      <input id="pw" type="text" autocomplete="off" autocapitalize="characters" placeholder="الباسورد">
+      <button id="pwBtn" type="button">دخول</button>
+      <div id="pwStatus"></div>
+    </div>
+    <div id="signalStep" class="hidden">
+      <h1>إشارة إتمام المهمة</h1>
+      <p>دوس الزرار مرة واحدة بس، والإشارة هتوصل فورًا.</p>
+      <button id="btn" type="button">تم — انتهت المهمة</button>
+      <div id="status"></div>
+    </div>
   </div>
 <script>
 (function () {
+  function todaysPassword(d) {
+    var days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    var letter = days[d.getDay()].charAt(0);
+    var dayDigit = d.getDate() % 10;
+    var monthDigit = (d.getMonth() + 1) % 10;
+    var year2 = String(d.getFullYear()).slice(-2);
+    return letter + dayDigit + monthDigit + year2;
+  }
+  var pwStep = document.getElementById("pwStep");
+  var signalStep = document.getElementById("signalStep");
+  var pw = document.getElementById("pw");
+  var pwBtn = document.getElementById("pwBtn");
+  var pwStatus = document.getElementById("pwStatus");
+  function tryPassword() {
+    var entered = pw.value.replace(/\s+/g, "").toUpperCase();
+    if (entered && entered === todaysPassword(new Date())) {
+      pwStep.classList.add("hidden");
+      signalStep.classList.remove("hidden");
+    } else {
+      pwStatus.textContent = "الباسورد غلط — اتأكد من الباسورد اللي وصلك وحاول تاني.";
+      pwStatus.classList.add("err");
+    }
+  }
+  pwBtn.addEventListener("click", tryPassword);
+  pw.addEventListener("keydown", function (e) { if (e.key === "Enter") tryPassword(); });
+
   var btn = document.getElementById("btn");
   var status = document.getElementById("status");
   var code = new URLSearchParams(window.location.search).get("c");
